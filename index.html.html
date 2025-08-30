@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voyage de l'Information Numérique — 5e (version améliorée)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    /* ===== Thème (variables) ===== */
+    :root{
+      --bg1:#0a0a2a; --bg2:#1a1a3a; --panel1:#1e1e40; --panel2:#2d2d50;
+      --cyan:#4deeea; --lime:#74ee15; --mag:#f000ff; --text:#ffffff;
+      --stroke:#4c4c7a; --shadow:0 5px 15px rgba(0,0,0,.3);
+      --focus:#ffd166; --danger:#ff003c; --ok:#63c413;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:var(--text);
+      display:flex;flex-direction:column;align-items:center;min-height:100vh;gap:16px;padding:20px;overflow-x:hidden
+    }
+    .container{max-width:1200px;width:100%;display:flex;flex-direction:column;gap:16px}
+    header{background:rgba(30,30,60,.5);border:1px solid var(--stroke);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+    h1{margin:0 0 6px;font-size:clamp(1.4rem,2vw+1rem,2.2rem);color:var(--cyan);text-shadow:0 0 10px rgba(77,238,234,.4)}
+    .subtitle{color:var(--lime);opacity:.95}
+    .grade{color:var(--mag);font-style:italic}
+
+    /* ===== Ojectifs ===== */
+    .card{background:linear-gradient(180deg,var(--panel1),var(--panel2));border:1px solid var(--stroke);border-radius:16px;box-shadow:var(--shadow)}
+    .learning{padding:16px}
+    .learning h3{margin:0 0 10px;display:flex;gap:8px;align-items:center;color:var(--lime)}
+    .learning ul{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;padding-left:18px}
+
+    /* ===== Contrôles ===== */
+    .controls{display:flex;flex-direction:column;gap:12px;padding:12px}
+    .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+    .btn,.speed-btn, .small{
+      appearance:none;border:0;border-radius:999px;padding:10px 16px;cursor:pointer;font-weight:700;
+      background:linear-gradient(180deg,#3a3a6a,#2c2c4d);color:var(--cyan);box-shadow:0 4px 8px rgba(0,0,0,.2);
+      transition:transform .15s ease, box-shadow .15s ease, background .2s ease
+    }
+    .btn:hover,.speed-btn:hover,.small:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.3)}
+    .btn[aria-pressed="true"],.speed-btn.active{background:linear-gradient(180deg,var(--cyan),#3aaae9);color:#0a0a1a}
+    .small{font-size:.9rem;padding:8px 12px}
+
+    /* Onglets de scènes */
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .tab{border:1px solid var(--stroke)}
+
+    /* Barre de progression */
+    .progress-wrap{display:flex;align-items:center;gap:10px;justify-content:center}
+    progress{width:min(520px,85vw);height:14px;border-radius:999px}
+    progress::-webkit-progress-bar{background:#2a2a4a;border-radius:999px}
+    progress::-webkit-progress-value{background:var(--cyan);border-radius:999px}
+    .counter{background:rgba(40,40,70,.6);border:1px solid var(--stroke);padding:6px 10px;border-radius:10px;color:var(--lime);font-weight:700}
+    .score{background:rgba(40,70,40,.5);border:1px solid var(--lime);padding:6px 10px;border-radius:10px;color:var(--lime);font-weight:700}
+
+    /* ===== Zone animation ===== */
+    .anim.card{padding:16px}
+    .anim-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--cyan);padding-bottom:8px;margin-bottom:8px}
+    .anim-title{font-size:1.25rem;color:var(--cyan)}
+    .scene-content{position:relative;min-height:380px;overflow:hidden;border:1px dashed var(--stroke);border-radius:12px}
+
+    .scene{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .4s ease;}
+    .scene.active{opacity:1;visibility:visible}
+
+    .label{position:absolute;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid var(--cyan);padding:6px 12px;border-radius:16px;font-weight:700;z-index:10}
+    .binary-code{position:absolute;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-weight:800;text-shadow:0 0 5px rgba(77,238,234,.8)}
+
+    .router,.device{position:absolute;background:linear-gradient(180deg,#3a3a6a,#2c2c4d);border:2px solid var(--lime);border-radius:10px;display:grid;place-items:center;box-shadow:var(--shadow);color:var(--lime)}
+    .router{bottom:80px;left:50%;translate:-50% 0;width:120px;height:80px}
+    .device{width:100px;height:70px;border-color:var(--cyan)}
+    .laptop{top:60px;left:200px}
+    .smartphone{top:60px;right:200px;width:50px;height:90px}
+
+    .wave{position:absolute;border:2px solid var(--mag);border-radius:50%;opacity:0;translate:-50% -50%}
+
+    .fiber-cable,.ethernet-cable{position:absolute;left:50%;top:50%;translate:-50% -50%;height:10px;width:min(600px,85%);border-radius:6px;overflow:hidden}
+    .fiber-cable{background:linear-gradient(90deg,#2c2c4d,#4c4c8c,#2c2c4d);box-shadow:0 0 10px rgba(77,238,234,.5)}
+    .ethernet-cable{height:20px;background:linear-gradient(90deg,#2c2c4d,#3a3a6a,#2c2c4d);box-shadow:0 0 10px rgba(116,238,21,.5)}
+    .light-pulse{position:absolute;width:20px;height:10px;border-radius:5px;background:var(--cyan);box-shadow:0 0 10px var(--cyan),0 0 20px var(--cyan)}
+    .electric-pulse{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+
+    /* Panneaux info/quiz */
+    .info.card,.quiz.card{padding:16px}
+    .info h3,.quiz h3{margin:0 0 10px;display:flex;gap:8px;align-items:center}
+    .info h3{color:var(--lime)}
+    .quiz h3{color:var(--mag)}
+    .key-term{color:var(--lime);font-weight:800;background:rgba(116,238,21,.12);padding:2px 6px;border-radius:4px}
+    .concept{color:var(--cyan);font-weight:800;background:rgba(77,238,234,.12);padding:2px 6px;border-radius:4px}
+    .fun{margin-top:8px;border-left:4px solid var(--mag);padding:10px;background:rgba(240,0,255,.08);border-radius:10px}
+
+    .quiz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+    .opt{padding:12px;text-align:center;border-radius:10px;background:linear-gradient(180deg,#3a3a6a,#2c2c4d);cursor:pointer;user-select:none;border:1px solid var(--stroke);transition:transform .12s ease}
+    .opt:hover{transform:translateY(-2px)}
+    .opt[aria-disabled="true"]{opacity:.6;cursor:not-allowed}
+    .opt.correct{background:linear-gradient(180deg,#74ee15,#63c413);color:#0a0a1a;border-color:#63c413}
+    .opt.incorrect{background:linear-gradient(180deg,#ff003c,#cc002f)}
+    .feedback{margin-top:8px;min-height:28px}
+
+    .narrator{padding:12px;border-radius:10px;background:rgba(240,0,255,.1);box-shadow:0 3px 6px rgba(0,0,0,.2);display:flex;gap:8px;align-items:center;justify-content:center}
+
+    footer{opacity:.8;text-align:center;padding:10px}
+
+    /* Accessibilité visuelle */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+    /* Contraste élevé */
+    .contrast :where(.card,.btn,.speed-btn,.opt,.router,.device){filter:contrast(1.2) saturate(1.1)}
+    .contrast .label{background:#000}
+
+    /* Réduction d’animation */
+    @media (prefers-reduced-motion: reduce){
+      *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+    }
+
+    /* Layout responsive */
+    .grid-main{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+    @media (max-width:920px){.grid-main{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <a class="sr-only" href="#main">Aller au contenu</a>
+  <div class="container" id="main">
+    <header>
+      <h1><i class="fas fa-laptop-code"></i> Voyage de l'Information Numérique</h1>
+      <div class="subtitle">Découvre comment les données circulent à travers différents médias — <span class="grade">Niveau 5e</span></div>
+    </header>
+
+    <section class="card learning" aria-labelledby="obj">
+      <h3 id="obj"><i class="fas fa-bullseye"></i> Objectifs d'apprentissage</h3>
+      <ul>
+        <li>Comprendre que l'information numérique est codée en <span class="key-term">binaire</span> (0 et 1).</li>
+        <li>Distinguer les <span class="key-term">supports de transmission</span> : ondes radio, lumière, électricité.</li>
+        <li>Relier un même message à des <span class="concept">signaux différents</span>.</li>
+        <li>Différencier <span class="key-term">filaire</span> / <span class="key-term">sans fil</span>.</li>
+        <li>Utiliser un vocabulaire technique de base (bit, octet, routeur, fibre, RJ45).</li>
+      </ul>
+    </section>
+
+    <section class="card controls" aria-label="Contrôles de l'animation">
+      <div class="tabs row" role="tablist" aria-label="Scènes">
+        <button class="btn tab" role="tab" aria-selected="true" data-scene="1"><i class="fas fa-digital-tachograph"></i> Code binaire</button>
+        <button class="btn tab" role="tab" aria-selected="false" data-scene="2"><i class="fas fa-wifi"></i> Wi‑Fi</button>
+        <button class="btn tab" role="tab" aria-selected="false" data-scene="3"><i class="fas fa-lightbulb"></i> Fibre optique</button>
+        <button class="btn tab" role="tab" aria-selected="false" data-scene="4"><i class="fas fa-network-wired"></i> Câble Ethernet</button>
+        <button class="btn tab" role="tab" aria-selected="false" data-scene="5"><i class="fas fa-sync-alt"></i> Récapitulatif</button>
+      </div>
+      <div class="row progress-wrap">
+        <progress id="progress" max="5" value="1" aria-label="Progression des scènes"></progress>
+        <span class="counter">Étape <span id="scene-number">1</span>/5</span>
+        <span class="score" title="Score du quiz">Score: <span id="score">0</span></span>
+      </div>
+      <div class="row">
+        <span><i class="fas fa-tachometer-alt"></i> Vitesse:</span>
+        <button class="speed-btn active" data-speed="1">Lente</button>
+        <button class="speed-btn" data-speed="2">Normale</button>
+        <button class="speed-btn" data-speed="3">Rapide</button>
+        <button class="small" id="btn-pause" aria-pressed="false"><i class="fas fa-pause"></i> Pause</button>
+        <button class="small" id="btn-contrast" aria-pressed="false"><i class="fas fa-universal-access"></i> Contraste élevé</button>
+        <button class="small" id="btn-reset"><i class="fas fa-rotate"></i> Réinitialiser</button>
+      </div>
+    </section>
+
+    <section class="grid-main">
+      <div class="card anim" id="animation-container">
+        <div class="anim-header">
+          <div class="anim-title" id="scene-title">Code binaire : le langage des ordinateurs</div>
+          <div class="counter" id="step-indicator">Scène 1</div>
+        </div>
+        <div class="scene-content" aria-live="off">
+          <!-- Scene 1 -->
+          <div class="scene active" id="scene1" role="tabpanel" aria-labelledby="tab1">
+            <div class="label" style="top:24px">0 et 1 — le langage universel des ordinateurs</div>
+          </div>
+          <!-- Scene 2 -->
+          <div class="scene" id="scene2" role="tabpanel" aria-labelledby="tab2">
+            <div class="router" aria-label="Routeur Wi‑Fi"></div>
+            <div class="device laptop" aria-label="Ordinateur portable">💻</div>
+            <div class="device smartphone" aria-label="Smartphone">📱</div>
+            <div class="label" style="bottom:180px;border-color:var(--mag)">Routeur Wi‑Fi</div>
+          </div>
+          <!-- Scene 3 -->
+          <div class="scene" id="scene3" role="tabpanel" aria-labelledby="tab3">
+            <div class="fiber-cable" aria-label="Câble fibre optique"></div>
+            <div class="label" style="top:30%">Fibre optique = impulsions lumineuses</div>
+          </div>
+          <!-- Scene 4 -->
+          <div class="scene" id="scene4" role="tabpanel" aria-labelledby="tab4">
+            <div class="ethernet-cable" aria-label="Câble RJ45"></div>
+            <div class="label" style="top:30%">RJ45 = impulsions électriques</div>
+          </div>
+          <!-- Scene 5 -->
+          <div class="scene" id="scene5" role="tabpanel" aria-labelledby="tab5">
+            <div class="label" style="top:12px;border-color:var(--mag)">Différents signaux, même code binaire</div>
+            <div style="position:absolute;inset:0;display:grid;place-items:center">
+              <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center">
+                <div style="display:grid;place-items:center;gap:8px">
+                  <div style="width:80px;height:80px;border-radius:50%;border:2px solid var(--cyan);display:grid;place-items:center;box-shadow:var(--shadow)"><i class="fas fa-wifi fa-2x" style="color:var(--cyan)"></i></div>
+                  <div style="color:var(--lime);font-weight:700">Wi‑Fi = ondes radio</div>
+                </div>
+                <div style="display:grid;place-items:center;gap:8px">
+                  <div style="width:80px;height:80px;border-radius:50%;border:2px solid var(--cyan);display:grid;place-items:center;box-shadow:var(--shadow)"><i class="fas fa-lightbulb fa-2x" style="color:var(--cyan)"></i></div>
+                  <div style="color:var(--lime);font-weight:700">Fibre = lumière</div>
+                </div>
+                <div style="display:grid;place-items:center;gap:8px">
+                  <div style="width:80px;height:80px;border-radius:50%;border:2px solid var(--cyan);display:grid;place-items:center;box-shadow:var(--shadow)"><i class="fas fa-bolt fa-2x" style="color:var(--cyan)"></i></div>
+                  <div style="color:var(--lime);font-weight:700">RJ45 = électricité</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <section class="card info" aria-labelledby="info-title">
+          <h3 id="info-title"><i class="fas fa-info-circle"></i> Information</h3>
+          <div id="info-content">Toutes les informations numériques sont représentées par des zéros et des uns. C'est le <span class="key-term">code binaire</span>. Un <em>bit</em> vaut 0 ou 1 ; 8 bits = 1 <em>octet</em>.</div>
+          <div class="fun"><strong><i class="fas fa-lightbulb"></i> Le savais‑tu ?</strong> <span id="fun-fact">Une photo de 10 mégapixels contient environ 80 millions de 0 et de 1 !</span></div>
+        </section>
+
+        <section class="card quiz" aria-labelledby="quiz-title">
+          <h3 id="quiz-title"><i class="fas fa-question-circle"></i> Quiz</h3>
+          <div id="quiz-question" class="quiz-question">Quel est le langage de base compris par tous les ordinateurs ?</div>
+          <div class="quiz-grid" id="quiz-options" role="group" aria-label="Réponses du quiz"></div>
+          <div class="feedback" id="quiz-feedback" aria-live="polite"></div>
+        </section>
+
+        <section class="narrator" id="narrator" aria-live="polite">
+          <i class="fas fa-microphone-alt"></i>
+          <span id="narrator-text">Toutes les informations numériques sont représentées par des zéros et des uns.</span>
+        </section>
+      </div>
+    </section>
+
+    <footer>Réalisé pour le cours de Technologie — 5e · Version accessible et interactive</footer>
+  </div>
+
+  <script>
+    // =========================
+    // Données des scènes & quiz
+    // =========================
+    const sceneData = {
+      1:{
+        title:"Code binaire : le langage des ordinateurs",
+        narrator:"Toutes les informations numériques sont représentées par des zéros et des uns. C'est le code binaire.",
+        info:"Toutes les informations numériques sont représentées par des zéros et des uns. C'est le <span class='key-term'>code binaire</span>. Chaque 0 ou 1 est un <span class='key-term'>bit</span> ; 8 bits = 1 <em>octet</em>.",
+        fun:"Une photo de 10 mégapixels contient ~80 millions de bits !",
+        quiz:{
+          question:"Quel est le langage de base que comprennent tous les ordinateurs ?",
+          options:[
+            {text:"Le code binaire (0 et 1)", correct:true, explain:"Tout se code en 0/1 : textes, images, sons."},
+            {text:"Le français", correct:false, explain:"Les ordinateurs ne ‘comprennent’ pas les langues humaines."},
+            {text:"Le code Morse", correct:false, explain:"C'est un autre code humain, pas celui des ordinateurs."},
+            {text:"Le langage Python", correct:false, explain:"Python est traduit… en binaire avant exécution."}
+          ]
+        }
+      },
+      2:{
+        title:"Transmission par ondes radio (Wi‑Fi)",
+        narrator:"Le routeur Wi‑Fi convertit le binaire en ondes radio qui voyagent dans l’air.",
+        info:"Le <span class='key-term'>Wi‑Fi</span> utilise des <span class='key-term'>ondes radio</span>. Le routeur transforme 0/1 en signaux radio reçus par les appareils.",
+        fun:"Le Wi‑Fi utilise des bandes proches de celles des micro‑ondes mais avec bien moins de puissance.",
+        quiz:{
+          question:"Comment le Wi‑Fi transmet‑il les données ?",
+          options:[
+            {text:"Par ondes radio", correct:true, explain:"Sans fil ⇒ ondes électromagnétiques."},
+            {text:"Par câbles électriques", correct:false, explain:"Ça, c’est l’Ethernet."},
+            {text:"Par signaux de fumée", correct:false, explain:"Pas très efficace pour Internet 😉"},
+            {text:"Par fils de cuivre", correct:false, explain:"Fils de cuivre = support filaire, pas Wi‑Fi."}
+          ]
+        }
+      },
+      3:{
+        title:"Transmission par fibre optique",
+        narrator:"La fibre utilise des impulsions de lumière pour envoyer les bits très loin et très vite.",
+        info:"La <span class='key-term'>fibre optique</span> transporte la <span class='key-term'>lumière</span>. Un 1 = impulsion lumineuse ; un 0 = absence de lumière.",
+        fun:"Un seul câble optique peut transporter l’équivalent de milliers de chaînes TV en parallèle.",
+        quiz:{
+          question:"Qu’est‑ce qui circule dans une fibre optique ?",
+          options:[
+            {text:"De la lumière", correct:true, explain:"Des impulsions lumineuses représentent les bits."},
+            {text:"De l’électricité", correct:false, explain:"L’électricité circule dans le cuivre (Ethernet)."},
+            {text:"De l’air", correct:false, explain:"Le câble est optique, pas un tuyau à air."},
+            {text:"Des ondes radio", correct:false, explain:"Les ondes radio, c’est le Wi‑Fi."}
+          ]
+        }
+      },
+      4:{
+        title:"Transmission par câble Ethernet",
+        narrator:"Les câbles RJ45 transportent des impulsions électriques correspondant aux bits.",
+        info:"Les <span class='key-term'>câbles Ethernet</span> utilisent l’<span class='key-term'>électricité</span>. 1 = présence de courant/tension ; 0 = absence.",
+        fun:"Un câble cuivre Ethernet peut aller jusqu’à ~100 m sans répéteur.",
+        quiz:{
+          question:"Que représente un ‘1’ dans un câble Ethernet ?",
+          options:[
+            {text:"La présence de courant/tension", correct:true, explain:"Impulsion électrique = 1."},
+            {text:"L’absence de courant", correct:false, explain:"Absence ⇒ 0."},
+            {text:"Une impulsion lumineuse", correct:false, explain:"Impulsions lumineuses ⇒ fibre."},
+            {text:"Une onde radio", correct:false, explain:"Ondes radio ⇒ Wi‑Fi."}
+          ]
+        }
+      },
+      5:{
+        title:"Récapitulatif : différents signaux, même code",
+        narrator:"Ondes radio, lumière ou électricité : l’information reste des 0 et des 1.",
+        info:"Quel que soit le support (<span class='key-term'>ondes radio</span>, <span class='key-term'>lumière</span>, <span class='key-term'>électricité</span>), le message reste binaire.",
+        fun:"Chaque seconde, des quantités gigantesques de bits voyagent sur Internet !",
+        quiz:{
+          question:"Que partagent toutes ces méthodes ?",
+          options:[
+            {text:"Elles transportent la même information binaire", correct:true, explain:"Le code ne change pas, seul le support change."},
+            {text:"Elles utilisent chacune un code différent", correct:false, explain:"Le code reste 0/1."},
+            {text:"Seule la fibre utilise des 0 et des 1", correct:false, explain:"Tout est binaire au final."},
+            {text:"Le Wi‑Fi est la seule méthode sans fil", correct:false, explain:"Il existe aussi Bluetooth, 4G/5G, etc."}
+          ]
+        }
+      }
+    };
+
+    // =========================
+    // État global & utilitaires
+    // =========================
+    let currentScene = 1;
+    let animationSpeed = 2; // 1 lente, 2 normale, 3 rapide
+    let paused = false;
+    let loopTimeout = null;
+    let score = 0;
+    const activeIntervals = new Set();
+    const activeTimeouts = new Set();
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+
+    function speedMult(){return animationSpeed===1?0.5:animationSpeed===3?2:1}
+
+    function clearTimers(){
+      activeIntervals.forEach(id=>clearInterval(id)); activeIntervals.clear();
+      activeTimeouts.forEach(id=>clearTimeout(id)); activeTimeouts.clear();
+      if(loopTimeout){ clearTimeout(loopTimeout); loopTimeout=null; }
+    }
+
+    function removeAnimated(){
+      $$('.binary-code,.wave,.light-pulse,.electric-pulse').forEach(el=>el.remove());
+    }
+
+    function setPressed(el, on){ el.setAttribute('aria-pressed', String(!!on)); }
+
+    // =========================
+    // Interface : onglets, vitesse, etc.
+    // =========================
+    function bindUI(){
+      // Tabs
+      $$('.tab').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          showScene(Number(btn.dataset.scene));
+          restartLoop();
+        });
+      });
+      // Vitesse
+      $$('.speed-btn').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          $$('.speed-btn').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
+          animationSpeed = Number(b.dataset.speed);
+          showScene(currentScene, {preserveTab:true});
+          restartLoop();
+        });
+      });
+      // Pause
+      $('#btn-pause').addEventListener('click', ()=>{
+        paused = !paused; setPressed($('#btn-pause'), paused);
+      });
+      // Contraste
+      $('#btn-contrast').addEventListener('click', ()=>{
+        document.body.classList.toggle('contrast');
+        setPressed($('#btn-contrast'), document.body.classList.contains('contrast'));
+      });
+      // Reset
+      $('#btn-reset').addEventListener('click', ()=>{
+        score=0; updateScore();
+        animationSpeed=2; $$('.speed-btn').forEach(x=>x.classList.toggle('active', x.dataset.speed==='2'));
+        paused=false; setPressed($('#btn-pause'), false); document.body.classList.remove('contrast'); setPressed($('#btn-contrast'), false);
+        showScene(1);
+        restartLoop();
+      });
+      // Raccourcis clavier
+      window.addEventListener('keydown', (e)=>{
+        if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement?.tagName)) return;
+        if(e.key==='ArrowRight') { e.preventDefault(); showScene(Math.min(5,currentScene+1)); }
+        if(e.key==='ArrowLeft')  { e.preventDefault(); showScene(Math.max(1,currentScene-1)); }
+        const n = Number(e.key); if(n>=1 && n<=5){ showScene(n); }
+      });
+    }
+    
+    function updateScore(){ $('#score').textContent = String(score); }
+
+    function scheduleLoop(){
+      const base = 12000; const delay = base / speedMult();
+      loopTimeout = setTimeout(()=>{
+        if(!paused){ showScene(currentScene===5?1:currentScene+1); }
+        scheduleLoop();
+      }, delay);
+    }
+    function restartLoop(){ if(loopTimeout){ clearTimeout(loopTimeout); } scheduleLoop(); }
+    
+
+    // =========================
+    // Affichage scène
+    // =========================
+    function showScene(sceneNumber, opts={preserveTab:false}){
+      clearTimers(); removeAnimated();
+
+      // MAJ onglets
+      if(!opts.preserveTab){
+        $$('.tab').forEach(b=>{
+          const sel = Number(b.dataset.scene)===sceneNumber; b.setAttribute('aria-selected', String(sel));
+        });
+      }
+      // MAJ scènes visibles
+      $$('.scene').forEach(s=>s.classList.remove('active'));
+      $('#scene'+sceneNumber).classList.add('active');
+
+      // MAJ titres & compteur
+      const data = sceneData[sceneNumber];
+      $('#scene-title').textContent = data.title;
+      $('#scene-number').textContent = String(sceneNumber);
+      $('#step-indicator').textContent = `Scène ${sceneNumber}`;
+      $('#progress').value = sceneNumber;
+
+      // MAJ contenus
+      $('#narrator-text').textContent = data.narrator;
+      $('#info-content').innerHTML = data.info;
+      $('#fun-fact').textContent = data.fun;
+
+      // Quiz
+      renderQuiz(sceneNumber);
+
+      // Animations
+      currentScene = sceneNumber;
+      switch(sceneNumber){
+        case 1: animateBinaryCode(); break;
+        case 2: animateWifi(); break;
+        case 3: animateFiber(); break;
+        case 4: animateEthernet(); break;
+        case 5: animateRecap(); break;
+      }
+    }
+
+    // =========================
+    // Quiz
+    // =========================
+    function shuffle(arr){return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);}
+
+    function renderQuiz(sceneNumber){
+      const q = sceneData[sceneNumber].quiz;
+      $('#quiz-question').textContent = q.question;
+      const grid = $('#quiz-options'); grid.innerHTML='';
+      $('#quiz-feedback').textContent='';
+
+      const options = shuffle(q.options.slice());
+      options.forEach((opt, idx)=>{
+        const b = document.createElement('div');
+        b.className = 'opt'; b.setAttribute('role','button'); b.setAttribute('tabindex','0');
+        b.textContent = opt.text; b.dataset.correct = String(!!opt.correct); b.dataset.explain = opt.explain || '';
+        b.addEventListener('click', ()=> handleAnswer(b, !!opt.correct, opt.explain||''));
+        b.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); b.click(); }});
+        grid.appendChild(b);
+      });
+    }
+
+    function disableOptions(){ $$('.opt').forEach(o=>o.setAttribute('aria-disabled','true')); }
+
+    function handleAnswer(el, isCorrect, explain){
+      if(el.getAttribute('aria-disabled')==='true') return;
+      disableOptions();
+      if(isCorrect){
+        el.classList.add('correct');
+        $('#quiz-feedback').innerHTML = `<i class="fas fa-check-circle"></i> Bravo ! ${explain}`;
+        score++; updateScore();
+      } else {
+        el.classList.add('incorrect');
+        $('#quiz-feedback').innerHTML = `<i class=\"fas fa-times-circle\"></i> Ce n’est pas ça… ${explain}`;
+        $$('.opt').forEach(o=>{ if(o!==el) o.removeAttribute('aria-disabled'); });
+      }
+    }
+    
+    // =========================
+    // Animations (respectent pause & vitesse)
+    // =========================
+    function every(ms, fn){ const id = setInterval(()=>{ if(!paused) fn(); }, ms); activeIntervals.add(id); }
+    function later(ms, fn){ const id = setTimeout(()=>{ fn(); activeTimeouts.delete(id); }, ms); activeTimeouts.add(id); }
+
+    function animateBinaryCode(){
+      const container = $('#scene1');
+      const sp = speedMult();
+      for(let i=0;i<20;i++){
+        later(i * 200/sp, ()=>{
+          const bit = document.createElement('div');
+          bit.className='binary-code';
+          bit.textContent = Math.random()>0.5?'1':'0';
+          bit.style.left = (10+Math.random()*80)+'%';
+          bit.style.top  = (20+Math.random()*50)+'%';
+          bit.style.fontSize = (16+Math.random()*20)+'px';
+          container.appendChild(bit);
+          let pos = parseFloat(bit.style.top);
+          const id = setInterval(()=>{
+            if(paused) return;
+            pos += 1; bit.style.top = pos+'%';
+            if(pos>92){ clearInterval(id); activeIntervals.delete(id); bit.remove(); }
+          }, 100/sp); activeIntervals.add(id);
+        });
+      }
+    }
+
+    function animateWifi(){
+      const router = $('#scene2 .router');
+      const laptop = $('#scene2 .laptop');
+      const phone  = $('#scene2 .smartphone');
+      const scene = $('#scene2');
+      const sp = speedMult();
+      const containerRect = $('#animation-container').getBoundingClientRect();
+
+      // Ondes concentriques
+      for(let i=0;i<10;i++){
+        later(i*500/sp, ()=>{
+          const r = router.getBoundingClientRect();
+          const cx = r.left - containerRect.left + r.width/2;
+          const cy = r.top  - containerRect.top  + r.height/2;
+          const wave = document.createElement('div'); wave.className='wave'; wave.style.left=cx+'px'; wave.style.top=cy+'px';
+          scene.appendChild(wave);
+          let size=0;
+          const id = setInterval(()=>{
+            if(paused) return;
+            size+=5; wave.style.width=size+'px'; wave.style.height=size+'px'; wave.style.opacity = 1-size/320;
+            if(size>320){ clearInterval(id); activeIntervals.delete(id); wave.remove(); }
+          }, 30/sp); activeIntervals.add(id);
+        });
+      }
+      // Bits vers appareils
+      for(let i=0;i<12;i++){
+        later(i*300/sp, ()=>{
+          const r = router.getBoundingClientRect();
+          const startX = r.left - containerRect.left + r.width/2;
+          const startY = r.top  - containerRect.top  + r.height/2;
+          const target = Math.random()>0.5? laptop : phone;
+          const t = target.getBoundingClientRect();
+          const endX = t.left - containerRect.left + t.width/2;
+          const endY = t.top  - containerRect.top  + t.height/2;
+          const bit = document.createElement('div'); bit.className='binary-code'; bit.textContent=Math.random()>0.5?'1':'0';
+          bit.style.left=startX+'px'; bit.style.top=startY+'px'; scene.appendChild(bit);
+          let prog=0;
+          const id = setInterval(()=>{
+            if(paused) return;
+            prog+=0.02; bit.style.left = (startX+(endX-startX)*prog)+'px'; bit.style.top=(startY+(endY-startY)*prog)+'px';
+            if(prog>=1){ clearInterval(id); activeIntervals.delete(id); bit.remove(); }
+          }, 20/sp); activeIntervals.add(id);
+        });
+      }
+    }
+
+    function animateFiber(){
+      const cable = $('#scene3 .fiber-cable');
+      const sp = speedMult();
+      for(let i=0;i<15;i++){
+        later(i*300/sp, ()=>{
+          const pulse = document.createElement('div'); pulse.className='light-pulse';
+          cable.appendChild(pulse);
+          let x=0; const id=setInterval(()=>{
+            if(paused) return; x+=5; pulse.style.left=x+'px';
+            if(x>cable.clientWidth){ clearInterval(id); activeIntervals.delete(id); pulse.remove(); }
+          }, 20/sp); activeIntervals.add(id);
+        });
+      }
+    }
+
+    function animateEthernet(){
+      const cable = $('#scene4 .ethernet-cable');
+      const sp = speedMult();
+      for(let i=0;i<15;i++){
+        later(i*300/sp, ()=>{
+          const pulse = document.createElement('div'); pulse.className='electric-pulse';
+          cable.appendChild(pulse);
+          let x=0; const id=setInterval(()=>{
+            if(paused) return; x+=5; pulse.style.left=x+'px';
+            if(x>cable.clientWidth){ clearInterval(id); activeIntervals.delete(id); pulse.remove(); }
+          }, 20/sp); activeIntervals.add(id);
+        });
+      }
+    }
+
+    function animateRecap(){
+      const scene = $('#scene5');
+      const sp = speedMult();
+      for(let i=0;i<15;i++){
+        later(i*300/sp, ()=>{
+          const bit = document.createElement('div'); bit.className='binary-code'; bit.textContent=Math.random()>0.5?'1':'0';
+          bit.style.left=(10+Math.random()*80)+'%'; bit.style.top=(40+Math.random()*40)+'%'; scene.appendChild(bit);
+          let dir = Math.random()>0.5?1:-1; let pos = parseFloat(bit.style.left);
+          const id=setInterval(()=>{
+            if(paused) return; pos+=dir; bit.style.left=pos+'%';
+            if(pos>92||pos<8){ clearInterval(id); activeIntervals.delete(id); bit.remove(); }
+          }, 100/sp); activeIntervals.add(id);
+        });
+      }
+    }
+    // =========================
+    // Init
+    // =========================
+    window.addEventListener('load', ()=>{
+      bindUI();
+      showScene(1);
+      restartLoop();
+    });
+  </script>
+</body>
+</html>
