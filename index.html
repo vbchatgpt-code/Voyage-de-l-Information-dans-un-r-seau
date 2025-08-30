@@ -1,622 +1,416 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Voyage de l'Information Numérique — 5e (version améliorée)</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <title>Voyage de l’information dans un réseau — 5e</title>
+  <meta name="description" content="Animation pédagogique interactive pour comprendre comment voyage l’information (binaire, supports, réseau)." />
+  <link rel="icon" href="favicon.ico">
   <style>
-    /* ===== Thème (variables) ===== */
     :root{
-      --bg1:#0a0a2a; --bg2:#1a1a3a; --panel1:#1e1e40; --panel2:#2d2d50;
-      --cyan:#4deeea; --lime:#74ee15; --mag:#f000ff; --text:#ffffff;
-      --stroke:#4c4c7a; --shadow:0 5px 15px rgba(0,0,0,.3);
-      --focus:#ffd166; --danger:#ff003c; --ok:#63c413;
+      --bg:#0f172a;--panel:#111827ee;--txt:#f8fafc;--muted:#cbd5e1;--accent:#38bdf8;--accent-2:#a78bfa;--ok:#22c55e;--err:#ef4444;--card:#111827;--card2:#0b1226;--focus:0 0 0 3px rgba(56,189,248,.5)
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-      background:linear-gradient(135deg,var(--bg1),var(--bg2));
-      color:var(--text);
-      display:flex;flex-direction:column;align-items:center;min-height:100vh;gap:16px;padding:20px;overflow-x:hidden
-    }
-    .container{max-width:1200px;width:100%;display:flex;flex-direction:column;gap:16px}
-    header{background:rgba(30,30,60,.5);border:1px solid var(--stroke);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
-    h1{margin:0 0 6px;font-size:clamp(1.4rem,2vw+1rem,2.2rem);color:var(--cyan);text-shadow:0 0 10px rgba(77,238,234,.4)}
-    .subtitle{color:var(--lime);opacity:.95}
-    .grade{color:var(--mag);font-style:italic}
+    @media (prefers-color-scheme: light){:root{--bg:#ffffff;--panel:#ffffffee;--txt:#0f172a;--muted:#334155;--card:#f8fafc;--card2:#eef2ff}}
+    html,body{margin:0;height:100%;background:radial-gradient(1200px 600px at 50% -200px,var(--card2),var(--bg));color:var(--txt);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    a{color:var(--accent)}
+    header{position:sticky;top:0;z-index:20;background:var(--panel);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .wrap{max-width:1100px;margin-inline:auto;padding:1.2rem}
+    .top{display:flex;gap:1rem;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:.8rem;align-items:center}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#001014;font-weight:900;animation:floatY 4s ease-in-out infinite}
+    nav a{margin-left:1rem;text-decoration:none;color:var(--txt);opacity:.85}
+    nav a:hover,nav a:focus{opacity:1;outline:none;box-shadow:var(--focus)}
 
-    /* ===== Ojectifs ===== */
-    .card{background:linear-gradient(180deg,var(--panel1),var(--panel2));border:1px solid var(--stroke);border-radius:16px;box-shadow:var(--shadow)}
-    .learning{padding:16px}
-    .learning h3{margin:0 0 10px;display:flex;gap:8px;align-items:center;color:var(--lime)}
-    .learning ul{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;padding-left:18px}
+    main{padding:2rem 1.2rem}
+    h1{font-size:clamp(1.6rem, 2.2vw + 1rem, 2.6rem); line-height:1.2; margin:.4rem 0}
+    .subtitle{color:var(--muted);margin-top:.3rem}
 
-    /* ===== Contrôles ===== */
-    .controls{display:flex;flex-direction:column;gap:12px;padding:12px}
-    .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
-    .btn,.speed-btn, .small{
-      appearance:none;border:0;border-radius:999px;padding:10px 16px;cursor:pointer;font-weight:700;
-      background:linear-gradient(180deg,#3a3a6a,#2c2c4d);color:var(--cyan);box-shadow:0 4px 8px rgba(0,0,0,.2);
-      transition:transform .15s ease, box-shadow .15s ease, background .2s ease
-    }
-    .btn:hover,.speed-btn:hover,.small:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.3)}
-    .btn[aria-pressed="true"],.speed-btn.active{background:linear-gradient(180deg,var(--cyan),#3aaae9);color:#0a0a1a}
-    .small{font-size:.9rem;padding:8px 12px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1.2rem}
+    .card{background:linear-gradient(160deg,var(--card),transparent 90%),linear-gradient(25deg,rgba(255,255,255,.06),transparent);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:1rem;box-shadow:0 10px 30px rgba(2,8,23,.35);opacity:0;transform:translateY(12px);transition:opacity .6s ease, transform .6s ease}
+    .card.visible{opacity:1;transform:translateY(0)}
+    .card h3{margin-top:0}
 
-    /* Onglets de scènes */
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-    .tab{border:1px solid var(--stroke)}
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:1.2rem;align-items:center}
+    @media (max-width:860px){.hero{grid-template-columns:1fr}}
 
-    /* Barre de progression */
-    .progress-wrap{display:flex;align-items:center;gap:10px;justify-content:center}
-    progress{width:min(520px,85vw);height:14px;border-radius:999px}
-    progress::-webkit-progress-bar{background:#2a2a4a;border-radius:999px}
-    progress::-webkit-progress-value{background:var(--cyan);border-radius:999px}
-    .counter{background:rgba(40,40,70,.6);border:1px solid var(--stroke);padding:6px 10px;border-radius:10px;color:var(--lime);font-weight:700}
-    .score{background:rgba(40,70,40,.5);border:1px solid var(--lime);padding:6px 10px;border-radius:10px;color:var(--lime);font-weight:700}
+    .chip{display:inline-flex;gap:.5rem;align-items:center;padding:.3rem .6rem;border-radius:999px;background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.35);font-size:.9rem;animation:glowPulse 3s ease-in-out infinite}
 
-    /* ===== Zone animation ===== */
-    .anim.card{padding:16px}
-    .anim-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--cyan);padding-bottom:8px;margin-bottom:8px}
-    .anim-title{font-size:1.25rem;color:var(--cyan)}
-    .scene-content{position:relative;min-height:380px;overflow:hidden;border:1px dashed var(--stroke);border-radius:12px}
+    /* timeline */
+    .timeline{position:relative;margin:1rem 0;padding-left:1.2rem}
+    .timeline::before{content:"";position:absolute;left:10px;top:0;bottom:0;width:2px;background:linear-gradient(var(--accent),transparent);animation:scrollGlow 5s linear infinite}
+    .step{position:relative;margin:.8rem 0;padding-left:1rem;opacity:.15}
+    .step.reveal{opacity:1;transition:opacity .6s ease}
+    .step::before{content:"";position:absolute;left:-7px;top:.25rem;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.25);animation:pulse 2.6s ease-in-out infinite}
 
-    .scene{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .4s ease;}
-    .scene.active{opacity:1;visibility:visible}
+    /* animations visuelles pédagogiques */
+    .anim-box{position:relative;height:180px;margin:1rem 0;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.08));border:1px solid rgba(255,255,255,.08)}
+    .anim-title{font-size:1.05rem;color:var(--accent);margin:.2rem 0 .6rem}
 
-    .label{position:absolute;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid var(--cyan);padding:6px 12px;border-radius:16px;font-weight:700;z-index:10}
-    .binary-code{position:absolute;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-weight:800;text-shadow:0 0 5px rgba(77,238,234,.8)}
+    /* Wi‑Fi */
+    .wifi-center{position:absolute;left:50%;bottom:56px;transform:translateX(-50%)}
+    .wifi-ping{position:absolute;inset:auto auto 0 50%;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px rgba(56,189,248,.9);transform:translateX(-50%)}
+    .wifi-wave{position:absolute;left:50%;bottom:56px;transform:translateX(-50%);border:2px solid var(--accent-2);border-radius:50%;opacity:0;animation:wave 2.6s ease-out infinite}
+    .device{position:absolute;width:56px;height:36px;border-radius:10px;border:2px solid var(--accent);display:grid;place-items:center;background:linear-gradient(180deg,#3a3a6a,#2c2c4d);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+    .laptop{top:24px;left:26%}
+    .phone{top:24px;right:26%;width:26px;height:48px}
 
-    .router,.device{position:absolute;background:linear-gradient(180deg,#3a3a6a,#2c2c4d);border:2px solid var(--lime);border-radius:10px;display:grid;place-items:center;box-shadow:var(--shadow);color:var(--lime)}
-    .router{bottom:80px;left:50%;translate:-50% 0;width:120px;height:80px}
-    .device{width:100px;height:70px;border-color:var(--cyan)}
-    .laptop{top:60px;left:200px}
-    .smartphone{top:60px;right:200px;width:50px;height:90px}
+    /* Fibre */
+    .fiber-path{position:absolute;left:10%;right:10%;top:50%;height:6px;border-radius:4px;background:linear-gradient(90deg,#2c2c4d,#4c4c8c,#2c2c4d);overflow:hidden}
+    .light{position:absolute;top:0;width:18px;height:6px;border-radius:3px;background:var(--accent-2);box-shadow:0 0 10px var(--accent-2),0 0 20px var(--accent-2);animation:beam 2s linear infinite}
 
-    .wave{position:absolute;border:2px solid var(--mag);border-radius:50%;opacity:0;translate:-50% -50%}
+    /* Ethernet */
+    .ethernet{position:absolute;left:10%;right:10%;top:50%;height:10px;border-radius:6px;background:linear-gradient(90deg,#2c2c4d,#3a3a6a,#2c2c4d)}
+    .pulse{position:absolute;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:movePulse 1.6s linear infinite}
 
-    .fiber-cable,.ethernet-cable{position:absolute;left:50%;top:50%;translate:-50% -50%;height:10px;width:min(600px,85%);border-radius:6px;overflow:hidden}
-    .fiber-cable{background:linear-gradient(90deg,#2c2c4d,#4c4c8c,#2c2c4d);box-shadow:0 0 10px rgba(77,238,234,.5)}
-    .ethernet-cable{height:20px;background:linear-gradient(90deg,#2c2c4d,#3a3a6a,#2c2c4d);box-shadow:0 0 10px rgba(116,238,21,.5)}
-    .light-pulse{position:absolute;width:20px;height:10px;border-radius:5px;background:var(--cyan);box-shadow:0 0 10px var(--cyan),0 0 20px var(--cyan)}
-    .electric-pulse{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+    /* binaire diffus */
+    .bit{position:absolute;font-family:monospace;font-weight:700}
 
-    /* Panneaux info/quiz */
-    .info.card,.quiz.card{padding:16px}
-    .info h3,.quiz h3{margin:0 0 10px;display:flex;gap:8px;align-items:center}
-    .info h3{color:var(--lime)}
-    .quiz h3{color:var(--mag)}
-    .key-term{color:var(--lime);font-weight:800;background:rgba(116,238,21,.12);padding:2px 6px;border-radius:4px}
-    .concept{color:var(--cyan);font-weight:800;background:rgba(77,238,234,.12);padding:2px 6px;border-radius:4px}
-    .fun{margin-top:8px;border-left:4px solid var(--mag);padding:10px;background:rgba(240,0,255,.08);border-radius:10px}
+    /* quiz */
+    .quiz{margin-top:1.2rem}
+    .q{margin:.8rem 0}
+    .choices{display:grid;gap:.4rem;margin-top:.4rem}
+    .choices label{display:flex;gap:.6rem;align-items:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:.6rem .7rem;border-radius:12px;cursor:pointer}
+    .choices input{accent-color:var(--accent)}
+    .badge{display:inline-block;padding:.15rem .45rem;border-radius:6px;font-size:.85rem}
+    .ok{background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.5)}
+    .err{background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.5)}
+    .actions{display:flex;gap:.6rem;margin-top:1rem}
+    button{border-radius:12px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(0,0,0,.08));padding:.6rem 1rem;color:var(--txt);cursor:pointer}
+    button:focus{outline:none;box-shadow:var(--focus)}
 
-    .quiz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
-    .opt{padding:12px;text-align:center;border-radius:10px;background:linear-gradient(180deg,#3a3a6a,#2c2c4d);cursor:pointer;user-select:none;border:1px solid var(--stroke);transition:transform .12s ease}
-    .opt:hover{transform:translateY(-2px)}
-    .opt[aria-disabled="true"]{opacity:.6;cursor:not-allowed}
-    .opt.correct{background:linear-gradient(180deg,#74ee15,#63c413);color:#0a0a1a;border-color:#63c413}
-    .opt.incorrect{background:linear-gradient(180deg,#ff003c,#cc002f)}
-    .feedback{margin-top:8px;min-height:28px}
+    footer{border-top:1px solid rgba(255,255,255,.08);margin-top:2rem}
+    .small{font-size:.92rem;color:var(--muted)}
 
-    .narrator{padding:12px;border-radius:10px;background:rgba(240,0,255,.1);box-shadow:0 3px 6px rgba(0,0,0,.2);display:flex;gap:8px;align-items:center;justify-content:center}
+    /* keyframes */
+    @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    @keyframes glowPulse{0%{box-shadow:0 0 0 0 rgba(56,189,248,.45)}70%{box-shadow:0 0 0 12px rgba(56,189,248,0)}100%{box-shadow:0 0 0 0 rgba(56,189,248,0)}}
+    @keyframes scrollGlow{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    @keyframes wave{0%{transform:translateX(-50%) scale(.5);opacity:.9}100%{transform:translateX(-50%) scale(2.4);opacity:0}}
+    @keyframes beam{0%{left:0}100%{left:100%}}
+    @keyframes movePulse{0%{left:0}100%{left:100%}}
 
-    footer{opacity:.8;text-align:center;padding:10px}
-
-    /* Accessibilité visuelle */
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-
-    /* Contraste élevé */
-    .contrast :where(.card,.btn,.speed-btn,.opt,.router,.device){filter:contrast(1.2) saturate(1.1)}
-    .contrast .label{background:#000}
-
-    /* Réduction d’animation */
+    /* respect du mouvement réduit */
     @media (prefers-reduced-motion: reduce){
-      *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+      *,*:before,*:after{animation:none !important;transition:none !important}
     }
-
-    /* Layout responsive */
-    .grid-main{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
-    @media (max-width:920px){.grid-main{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <a class="sr-only" href="#main">Aller au contenu</a>
-  <div class="container" id="main">
-    <header>
-      <h1><i class="fas fa-laptop-code"></i> Voyage de l'Information Numérique</h1>
-      <div class="subtitle">Découvre comment les données circulent à travers différents médias — <span class="grade">Niveau 5e</span></div>
-    </header>
-
-    <section class="card learning" aria-labelledby="obj">
-      <h3 id="obj"><i class="fas fa-bullseye"></i> Objectifs d'apprentissage</h3>
-      <ul>
-        <li>Comprendre que l'information numérique est codée en <span class="key-term">binaire</span> (0 et 1).</li>
-        <li>Distinguer les <span class="key-term">supports de transmission</span> : ondes radio, lumière, électricité.</li>
-        <li>Relier un même message à des <span class="concept">signaux différents</span>.</li>
-        <li>Différencier <span class="key-term">filaire</span> / <span class="key-term">sans fil</span>.</li>
-        <li>Utiliser un vocabulaire technique de base (bit, octet, routeur, fibre, RJ45).</li>
-      </ul>
-    </section>
-
-    <section class="card controls" aria-label="Contrôles de l'animation">
-      <div class="tabs row" role="tablist" aria-label="Scènes">
-        <button class="btn tab" role="tab" aria-selected="true" data-scene="1"><i class="fas fa-digital-tachograph"></i> Code binaire</button>
-        <button class="btn tab" role="tab" aria-selected="false" data-scene="2"><i class="fas fa-wifi"></i> Wi‑Fi</button>
-        <button class="btn tab" role="tab" aria-selected="false" data-scene="3"><i class="fas fa-lightbulb"></i> Fibre optique</button>
-        <button class="btn tab" role="tab" aria-selected="false" data-scene="4"><i class="fas fa-network-wired"></i> Câble Ethernet</button>
-        <button class="btn tab" role="tab" aria-selected="false" data-scene="5"><i class="fas fa-sync-alt"></i> Récapitulatif</button>
-      </div>
-      <div class="row progress-wrap">
-        <progress id="progress" max="5" value="1" aria-label="Progression des scènes"></progress>
-        <span class="counter">Étape <span id="scene-number">1</span>/5</span>
-        <span class="score" title="Score du quiz">Score: <span id="score">0</span></span>
-      </div>
-      <div class="row">
-        <span><i class="fas fa-tachometer-alt"></i> Vitesse:</span>
-        <button class="speed-btn active" data-speed="1">Lente</button>
-        <button class="speed-btn" data-speed="2">Normale</button>
-        <button class="speed-btn" data-speed="3">Rapide</button>
-        <button class="small" id="btn-pause" aria-pressed="false"><i class="fas fa-pause"></i> Pause</button>
-        <button class="small" id="btn-contrast" aria-pressed="false"><i class="fas fa-universal-access"></i> Contraste élevé</button>
-        <button class="small" id="btn-reset"><i class="fas fa-rotate"></i> Réinitialiser</button>
-      </div>
-    </section>
-
-    <section class="grid-main">
-      <div class="card anim" id="animation-container">
-        <div class="anim-header">
-          <div class="anim-title" id="scene-title">Code binaire : le langage des ordinateurs</div>
-          <div class="counter" id="step-indicator">Scène 1</div>
+  <header>
+    <div class="wrap top" role="navigation" aria-label="Navigation principale">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">01</div>
+        <div>
+          <div style="font-weight:700">Voyage de l’information</div>
+          <div class="small">Niveau 5e — collège</div>
         </div>
-        <div class="scene-content" aria-live="off">
-          <!-- Scene 1 -->
-          <div class="scene active" id="scene1" role="tabpanel" aria-labelledby="tab1">
-            <div class="label" style="top:24px">0 et 1 — le langage universel des ordinateurs</div>
+      </div>
+      <nav>
+        <a href="#intro">Intro</a>
+        <a href="#supports">Supports</a>
+        <a href="#reseau">Réseau</a>
+        <a href="#binaire">Binaire</a>
+        <a href="#quiz">Quiz</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" id="intro">
+    <section class="hero card" aria-labelledby="titre">
+      <div>
+        <span class="chip" aria-label="Objectif de la séance">🎯 Objectif</span>
+        <h1 id="titre">Comment l’information voyage‑t‑elle dans un réseau ?</h1>
+        <p class="subtitle">Au collège, nous croisons Wi‑Fi, fibre, câble Ethernet… mais que se passe‑t‑il vraiment quand on envoie un message ?</p>
+        <div class="timeline" aria-label="Étapes du voyage de l’information">
+          <div class="step"><strong>1. Codage</strong> : le message est converti en bits (0 et 1).</div>
+          <div class="step"><strong>2. Transport</strong> : les bits se déplacent via un support (ondes radio, lumière, électricité).</div>
+          <div class="step"><strong>3. Routage</strong> : les équipements du réseau guident les paquets jusqu’à la bonne destination.</div>
+          <div class="step"><strong>4. Décodage</strong> : l’appareil réassemble les bits pour afficher texte, image, son.</div>
+        </div>
+      </div>
+      <div class="card" aria-label="Aperçu des supports">
+        <h3>Trois grandes familles de supports</h3>
+        <ul>
+          <li>📡 <strong>Ondes radio</strong> (Wi‑Fi, 4G/5G) → transmission <em>sans fil</em>.</li>
+          <li>💡 <strong>Lumière</strong> (fibre optique) → très haut débit, longues distances.</li>
+          <li>⚡ <strong>Électricité</strong> (cuivre/Ethernet) → fiable, faible latence.</li>
+        </ul>
+        <p class="small">Chaque support a des avantages et limites : portée, débit, sensibilité aux interférences…</p>
+      </div>
+    </section>
+
+    <section id="supports" style="margin-top:1.4rem">
+      <h2>Supports de transmission</h2>
+      <div class="grid">
+        <article class="card" aria-labelledby="wfi">
+          <h3 id="wfi">Wi‑Fi (ondes radio)</h3>
+          <p>Le signal se déplace dans l’air sous forme d’ondes électromagnétiques. Idéal pour la mobilité, mais sensible aux obstacles et aux interférences.</p>
+          <ul>
+            <li>✅ Pratique : pas de câble</li>
+            <li>⚠️ Débit variable selon la distance et les murs</li>
+            <li>🔐 Sécurité : mot de passe (WPA2/WPA3)</li>
+          </ul>
+          <div class="anim-title">Transmission par ondes radio</div>
+          <div class="anim-box" id="wifiBox">
+            <div class="wifi-center">
+              <div class="wifi-ping"></div>
+              <div class="wifi-wave" style="width:40px;height:40px"></div>
+              <div class="wifi-wave" style="width:70px;height:70px;animation-delay:.6s"></div>
+            </div>
+            <div class="device laptop">💻</div>
+            <div class="device phone">📱</div>
           </div>
-          <!-- Scene 2 -->
-          <div class="scene" id="scene2" role="tabpanel" aria-labelledby="tab2">
-            <div class="router" aria-label="Routeur Wi‑Fi"></div>
-            <div class="device laptop" aria-label="Ordinateur portable">💻</div>
-            <div class="device smartphone" aria-label="Smartphone">📱</div>
-            <div class="label" style="bottom:180px;border-color:var(--mag)">Routeur Wi‑Fi</div>
-          </div>
-          <!-- Scene 3 -->
-          <div class="scene" id="scene3" role="tabpanel" aria-labelledby="tab3">
-            <div class="fiber-cable" aria-label="Câble fibre optique"></div>
-            <div class="label" style="top:30%">Fibre optique = impulsions lumineuses</div>
-          </div>
-          <!-- Scene 4 -->
-          <div class="scene" id="scene4" role="tabpanel" aria-labelledby="tab4">
-            <div class="ethernet-cable" aria-label="Câble RJ45"></div>
-            <div class="label" style="top:30%">RJ45 = impulsions électriques</div>
-          </div>
-          <!-- Scene 5 -->
-          <div class="scene" id="scene5" role="tabpanel" aria-labelledby="tab5">
-            <div class="label" style="top:12px;border-color:var(--mag)">Différents signaux, même code binaire</div>
-            <div style="position:absolute;inset:0;display:grid;place-items:center">
-              <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center">
-                <div style="display:grid;place-items:center;gap:8px">
-                  <div style="width:80px;height:80px;border-radius:50%;border:2px solid var(--cyan);display:grid;place-items:center;box-shadow:var(--shadow)"><i class="fas fa-wifi fa-2x" style="color:var(--cyan)"></i></div>
-                  <div style="color:var(--lime);font-weight:700">Wi‑Fi = ondes radio</div>
-                </div>
-                <div style="display:grid;place-items:center;gap:8px">
-                  <div style="width:80px;height:80px;border-radius:50%;border:2px solid var(--cyan);display:grid;place-items:center;box-shadow:var(--shadow)"><i class="fas fa-lightbulb fa-2x" style="color:var(--cyan)"></i></div>
-                  <div style="color:var(--lime);font-weight:700">Fibre = lumière</div>
-                </div>
-                <div style="display:grid;place-items:center;gap:8px">
-                  <div style="width:80px;height:80px;border-radius:50%;border:2px solid var(--cyan);display:grid;place-items:center;box-shadow:var(--shadow)"><i class="fas fa-bolt fa-2x" style="color:var(--cyan)"></i></div>
-                  <div style="color:var(--lime);font-weight:700">RJ45 = électricité</div>
-                </div>
-              </div>
+        </article>
+
+        <article class="card" aria-labelledby="fibre">
+          <h3 id="fibre">Fibre optique (lumière)</h3>
+          <p>Des impulsions lumineuses circulent dans une fibre de verre/plastique. Très haut débit et très faible perte sur de longues distances.</p>
+          <ul>
+            <li>✅ Très rapide, stable</li>
+            <li>⚠️ Fragile à la courbure, nécessite des équipements optiques</li>
+          </ul>
+          <div class="anim-title">Transmission par fibre optique</div>
+          <div class="anim-box">
+            <div class="fiber-path">
+              <div class="light" style="animation-delay:0s"></div>
+              <div class="light" style="animation-delay:.5s"></div>
+              <div class="light" style="animation-delay:1s"></div>
             </div>
           </div>
-        </div>
-      </div>
+        </article>
 
-      <div class="stack">
-        <section class="card info" aria-labelledby="info-title">
-          <h3 id="info-title"><i class="fas fa-info-circle"></i> Information</h3>
-          <div id="info-content">Toutes les informations numériques sont représentées par des zéros et des uns. C'est le <span class="key-term">code binaire</span>. Un <em>bit</em> vaut 0 ou 1 ; 8 bits = 1 <em>octet</em>.</div>
-          <div class="fun"><strong><i class="fas fa-lightbulb"></i> Le savais‑tu ?</strong> <span id="fun-fact">Une photo de 10 mégapixels contient environ 80 millions de 0 et de 1 !</span></div>
-        </section>
-
-        <section class="card quiz" aria-labelledby="quiz-title">
-          <h3 id="quiz-title"><i class="fas fa-question-circle"></i> Quiz</h3>
-          <div id="quiz-question" class="quiz-question">Quel est le langage de base compris par tous les ordinateurs ?</div>
-          <div class="quiz-grid" id="quiz-options" role="group" aria-label="Réponses du quiz"></div>
-          <div class="feedback" id="quiz-feedback" aria-live="polite"></div>
-        </section>
-
-        <section class="narrator" id="narrator" aria-live="polite">
-          <i class="fas fa-microphone-alt"></i>
-          <span id="narrator-text">Toutes les informations numériques sont représentées par des zéros et des uns.</span>
-        </section>
+        <article class="card" aria-labelledby="eth">
+          <h3 id="eth">Ethernet (électricité)</h3>
+          <p>Des signaux électriques circulent dans des paires torsadées (RJ45). Excellent pour le jeu, la vidéo et les usages sensibles à la latence.</p>
+          <ul>
+            <li>✅ Fiable, faible latence</li>
+            <li>⚠️ Nécessite un câble → moins mobile</li>
+          </ul>
+          <div class="anim-title">Transmission par câble Ethernet</div>
+          <div class="anim-box">
+            <div class="ethernet">
+              <div class="pulse" style="animation-delay:0s"></div>
+              <div class="pulse" style="animation-delay:.4s"></div>
+              <div class="pulse" style="animation-delay:.8s"></div>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
 
-    <footer>Réalisé pour le cours de Technologie — 5e · Version accessible et interactive</footer>
-  </div>
+    <section id="reseau" style="margin-top:1.4rem">
+      <h2>Fonctionnement du réseau</h2>
+      <div class="grid">
+        <article class="card" aria-labelledby="routeur">
+          <h3 id="routeur">Équipements du réseau</h3>
+          <p>Chaque appareil a un rôle :</p>
+          <ul>
+            <li>📶 <strong>Box/routeur</strong> : distribue Internet, crée le réseau local.</li>
+            <li>🖧 <strong>Commutateur (switch)</strong> : relie plusieurs appareils en Ethernet.</li>
+            <li>🌐 <strong>Point d’accès</strong> : étend le Wi‑Fi.</li>
+            <li>🧭 <strong>Routeur</strong> : choisit le bon chemin pour les paquets.</li>
+          </ul>
+          <p class="small">Astuce : le routeur agit comme un « chef d’orchestre » qui guide les paquets jusqu’à leur destination.</p>
+        </article>
+        <article class="card" aria-labelledby="paquets">
+          <h3 id="paquets">Paquets & adresses</h3>
+          <p>Un message est découpé en <strong>paquets</strong>. Chaque paquet porte une <strong>adresse IP</strong> de source et de destination, un peu comme une enveloppe postale.</p>
+          <ul>
+            <li>📦 Paquet = morceau de message + en‑tête</li>
+            <li>🏷️ Adresse IP = numéro pour retrouver l’appareil</li>
+            <li>📬 Les paquets peuvent suivre des chemins différents puis être réassemblés</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="binaire" style="margin-top:1.4rem">
+      <h2>Codage de l’information</h2>
+      <div class="grid">
+        <article class="card" aria-labelledby="bits">
+          <h3 id="bits">Du message aux bits</h3>
+          <p>Un ordinateur ne comprend que des <strong>0</strong> et des <strong>1</strong>. Les lettres sont codées (ex. <abbr title="American Standard Code for Information Interchange">ASCII</abbr> / Unicode), les images et sons sont compressés puis envoyés sous forme binaire.</p>
+          <div class="small">Exemple : la lettre <code>A</code> vaut 65 en décimal, soit <code>01000001</code> en binaire (8 bits).</div>
+          <div class="anim-title">Code binaire (effet décoratif)</div>
+          <div class="anim-box" id="binaryBox"></div>
+        </article>
+        <article class="card" aria-labelledby="convert">
+          <h3 id="convert">Convertisseur binaire (essai)</h3>
+          <label for="char">Saisis un caractère :</label>
+          <input id="char" maxlength="1" inputmode="latin" style="width:120px;padding:.5rem;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:var(--txt)" aria-describedby="binout">
+          <div id="binout" class="chip" style="margin-top:.6rem">—</div>
+          <p class="small">Astuce : essaie avec A, B, €, ? …</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="quiz" class="card quiz" aria-labelledby="qtitle" style="margin-top:1.4rem">
+      <h3 id="qtitle">Mini‑quiz (auto‑correction)</h3>
+
+      <div class="q" data-correct="b">
+        <div><strong>1.</strong> Quel support utilise la <em>lumière</em> pour transporter l’information ?</div>
+        <div class="choices">
+          <label><input type="radio" name="q1" value="a"> Wi‑Fi</label>
+          <label><input type="radio" name="q1" value="b"> Fibre optique</label>
+          <label><input type="radio" name="q1" value="c"> Ethernet</label>
+        </div>
+        <div class="feedback small"></div>
+      </div>
+
+      <div class="q" data-correct="c">
+        <div><strong>2.</strong> Quel support offre en général la <em>latence la plus faible</em> ?</div>
+        <div class="choices">
+          <label><input type="radio" name="q2" value="a"> Wi‑Fi</label>
+          <label><input type="radio" name="q2" value="b"> 4G/5G</label>
+          <label><input type="radio" name="q2" value="c"> Ethernet</label>
+        </div>
+        <div class="feedback small"></div>
+      </div>
+
+      <div class="q" data-correct="a">
+        <div><strong>3.</strong> Dans un réseau, qui <em>guide les paquets</em> vers la bonne destination ?</div>
+        <div class="choices">
+          <label><input type="radio" name="q3" value="a"> Le routeur</label>
+          <label><input type="radio" name="q3" value="b"> L’imprimante</label>
+          <label><input type="radio" name="q3" value="c"> Le clavier</label>
+        </div>
+        <div class="feedback small"></div>
+      </div>
+
+      <div class="actions">
+        <button id="check">Corriger</button>
+        <button id="reset">Réinitialiser</button>
+        <div id="score" class="small" aria-live="polite" style="margin-left:auto"></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:1.4rem">
+      <h3>Crédits & utilisation</h3>
+      <p class="small">Ressource créée pour un usage pédagogique en technologie (cycle 4). Contenu sous licence CC BY‑SA. Compatible avec GitHub Pages et ENT (intégration possible via iframe).</p>
+      <p class="small">Dernière mise à jour : <span id="maj"></span></p>
+    </section>
+
+    <footer class="wrap small"></footer>
+  </main>
 
   <script>
-    // =========================
-    // Données des scènes & quiz
-    // =========================
-    const sceneData = {
-      1:{
-        title:"Code binaire : le langage des ordinateurs",
-        narrator:"Toutes les informations numériques sont représentées par des zéros et des uns. C'est le code binaire.",
-        info:"Toutes les informations numériques sont représentées par des zéros et des uns. C'est le <span class='key-term'>code binaire</span>. Chaque 0 ou 1 est un <span class='key-term'>bit</span> ; 8 bits = 1 <em>octet</em>.",
-        fun:"Une photo de 10 mégapixels contient ~80 millions de bits !",
-        quiz:{
-          question:"Quel est le langage de base que comprennent tous les ordinateurs ?",
-          options:[
-            {text:"Le code binaire (0 et 1)", correct:true, explain:"Tout se code en 0/1 : textes, images, sons."},
-            {text:"Le français", correct:false, explain:"Les ordinateurs ne ‘comprennent’ pas les langues humaines."},
-            {text:"Le code Morse", correct:false, explain:"C'est un autre code humain, pas celui des ordinateurs."},
-            {text:"Le langage Python", correct:false, explain:"Python est traduit… en binaire avant exécution."}
-          ]
-        }
-      },
-      2:{
-        title:"Transmission par ondes radio (Wi‑Fi)",
-        narrator:"Le routeur Wi‑Fi convertit le binaire en ondes radio qui voyagent dans l’air.",
-        info:"Le <span class='key-term'>Wi‑Fi</span> utilise des <span class='key-term'>ondes radio</span>. Le routeur transforme 0/1 en signaux radio reçus par les appareils.",
-        fun:"Le Wi‑Fi utilise des bandes proches de celles des micro‑ondes mais avec bien moins de puissance.",
-        quiz:{
-          question:"Comment le Wi‑Fi transmet‑il les données ?",
-          options:[
-            {text:"Par ondes radio", correct:true, explain:"Sans fil ⇒ ondes électromagnétiques."},
-            {text:"Par câbles électriques", correct:false, explain:"Ça, c’est l’Ethernet."},
-            {text:"Par signaux de fumée", correct:false, explain:"Pas très efficace pour Internet 😉"},
-            {text:"Par fils de cuivre", correct:false, explain:"Fils de cuivre = support filaire, pas Wi‑Fi."}
-          ]
-        }
-      },
-      3:{
-        title:"Transmission par fibre optique",
-        narrator:"La fibre utilise des impulsions de lumière pour envoyer les bits très loin et très vite.",
-        info:"La <span class='key-term'>fibre optique</span> transporte la <span class='key-term'>lumière</span>. Un 1 = impulsion lumineuse ; un 0 = absence de lumière.",
-        fun:"Un seul câble optique peut transporter l’équivalent de milliers de chaînes TV en parallèle.",
-        quiz:{
-          question:"Qu’est‑ce qui circule dans une fibre optique ?",
-          options:[
-            {text:"De la lumière", correct:true, explain:"Des impulsions lumineuses représentent les bits."},
-            {text:"De l’électricité", correct:false, explain:"L’électricité circule dans le cuivre (Ethernet)."},
-            {text:"De l’air", correct:false, explain:"Le câble est optique, pas un tuyau à air."},
-            {text:"Des ondes radio", correct:false, explain:"Les ondes radio, c’est le Wi‑Fi."}
-          ]
-        }
-      },
-      4:{
-        title:"Transmission par câble Ethernet",
-        narrator:"Les câbles RJ45 transportent des impulsions électriques correspondant aux bits.",
-        info:"Les <span class='key-term'>câbles Ethernet</span> utilisent l’<span class='key-term'>électricité</span>. 1 = présence de courant/tension ; 0 = absence.",
-        fun:"Un câble cuivre Ethernet peut aller jusqu’à ~100 m sans répéteur.",
-        quiz:{
-          question:"Que représente un ‘1’ dans un câble Ethernet ?",
-          options:[
-            {text:"La présence de courant/tension", correct:true, explain:"Impulsion électrique = 1."},
-            {text:"L’absence de courant", correct:false, explain:"Absence ⇒ 0."},
-            {text:"Une impulsion lumineuse", correct:false, explain:"Impulsions lumineuses ⇒ fibre."},
-            {text:"Une onde radio", correct:false, explain:"Ondes radio ⇒ Wi‑Fi."}
-          ]
-        }
-      },
-      5:{
-        title:"Récapitulatif : différents signaux, même code",
-        narrator:"Ondes radio, lumière ou électricité : l’information reste des 0 et des 1.",
-        info:"Quel que soit le support (<span class='key-term'>ondes radio</span>, <span class='key-term'>lumière</span>, <span class='key-term'>électricité</span>), le message reste binaire.",
-        fun:"Chaque seconde, des quantités gigantesques de bits voyagent sur Internet !",
-        quiz:{
-          question:"Que partagent toutes ces méthodes ?",
-          options:[
-            {text:"Elles transportent la même information binaire", correct:true, explain:"Le code ne change pas, seul le support change."},
-            {text:"Elles utilisent chacune un code différent", correct:false, explain:"Le code reste 0/1."},
-            {text:"Seule la fibre utilise des 0 et des 1", correct:false, explain:"Tout est binaire au final."},
-            {text:"Le Wi‑Fi est la seule méthode sans fil", correct:false, explain:"Il existe aussi Bluetooth, 4G/5G, etc."}
-          ]
-        }
-      }
-    };
+    // Date de maj
+    document.getElementById('maj').textContent = new Date().toLocaleDateString('fr-FR');
 
-    // =========================
-    // État global & utilitaires
-    // =========================
-    let currentScene = 1;
-    let animationSpeed = 2; // 1 lente, 2 normale, 3 rapide
-    let paused = false;
-    let loopTimeout = null;
-    let score = 0;
-    const activeIntervals = new Set();
-    const activeTimeouts = new Set();
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Apparition des cartes au scroll
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); } });
+    },{threshold:.16});
+    document.querySelectorAll('.card').forEach(el=>io.observe(el));
 
-    const $ = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
+    // Révélation progressive des étapes
+    const steps = document.querySelectorAll('.step');
+    steps.forEach((s,i)=> setTimeout(()=> s.classList.add('reveal'), 300 + i*450));
 
-    function speedMult(){return animationSpeed===1?0.5:animationSpeed===3?2:1}
-
-    function clearTimers(){
-      activeIntervals.forEach(id=>clearInterval(id)); activeIntervals.clear();
-      activeTimeouts.forEach(id=>clearTimeout(id)); activeTimeouts.clear();
-      if(loopTimeout){ clearTimeout(loopTimeout); loopTimeout=null; }
-    }
-
-    function removeAnimated(){
-      $$('.binary-code,.wave,.light-pulse,.electric-pulse').forEach(el=>el.remove());
-    }
-
-    function setPressed(el, on){ el.setAttribute('aria-pressed', String(!!on)); }
-
-    // =========================
-    // Interface : onglets, vitesse, etc.
-    // =========================
-    function bindUI(){
-      // Tabs
-      $$('.tab').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          showScene(Number(btn.dataset.scene));
-          restartLoop();
-        });
-      });
-      // Vitesse
-      $$('.speed-btn').forEach(b=>{
-        b.addEventListener('click', ()=>{
-          $$('.speed-btn').forEach(x=>x.classList.remove('active'));
-          b.classList.add('active');
-          animationSpeed = Number(b.dataset.speed);
-          showScene(currentScene, {preserveTab:true});
-          restartLoop();
-        });
-      });
-      // Pause
-      $('#btn-pause').addEventListener('click', ()=>{
-        paused = !paused; setPressed($('#btn-pause'), paused);
-      });
-      // Contraste
-      $('#btn-contrast').addEventListener('click', ()=>{
-        document.body.classList.toggle('contrast');
-        setPressed($('#btn-contrast'), document.body.classList.contains('contrast'));
-      });
-      // Reset
-      $('#btn-reset').addEventListener('click', ()=>{
-        score=0; updateScore();
-        animationSpeed=2; $$('.speed-btn').forEach(x=>x.classList.toggle('active', x.dataset.speed==='2'));
-        paused=false; setPressed($('#btn-pause'), false); document.body.classList.remove('contrast'); setPressed($('#btn-contrast'), false);
-        showScene(1);
-        restartLoop();
-      });
-      // Raccourcis clavier
-      window.addEventListener('keydown', (e)=>{
-        if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement?.tagName)) return;
-        if(e.key==='ArrowRight') { e.preventDefault(); showScene(Math.min(5,currentScene+1)); }
-        if(e.key==='ArrowLeft')  { e.preventDefault(); showScene(Math.max(1,currentScene-1)); }
-        const n = Number(e.key); if(n>=1 && n<=5){ showScene(n); }
+    // Convertisseur binaire simple (UTF-16 code unit)
+    const charInput = document.getElementById('char');
+    const binOut = document.getElementById('binout');
+    if (charInput && binOut) {
+      charInput.addEventListener('input', () => {
+        const v = charInput.value;
+        if(!v){binOut.textContent='—';return}
+        const code = v.codePointAt(0);
+        const bin = code.toString(2).padStart(8,'0');
+        binOut.textContent = `${v} → ${bin}`;
       });
     }
-    
-    function updateScore(){ $('#score').textContent = String(score); }
 
-    function scheduleLoop(){
-      const base = 12000; const delay = base / speedMult();
-      loopTimeout = setTimeout(()=>{
-        if(!paused){ showScene(currentScene===5?1:currentScene+1); }
-        scheduleLoop();
-      }, delay);
-    }
-    function restartLoop(){ if(loopTimeout){ clearTimeout(loopTimeout); } scheduleLoop(); }
-    
-
-    // =========================
-    // Affichage scène
-    // =========================
-    function showScene(sceneNumber, opts={preserveTab:false}){
-      clearTimers(); removeAnimated();
-
-      // MAJ onglets
-      if(!opts.preserveTab){
-        $$('.tab').forEach(b=>{
-          const sel = Number(b.dataset.scene)===sceneNumber; b.setAttribute('aria-selected', String(sel));
-        });
-      }
-      // MAJ scènes visibles
-      $$('.scene').forEach(s=>s.classList.remove('active'));
-      $('#scene'+sceneNumber).classList.add('active');
-
-      // MAJ titres & compteur
-      const data = sceneData[sceneNumber];
-      $('#scene-title').textContent = data.title;
-      $('#scene-number').textContent = String(sceneNumber);
-      $('#step-indicator').textContent = `Scène ${sceneNumber}`;
-      $('#progress').value = sceneNumber;
-
-      // MAJ contenus
-      $('#narrator-text').textContent = data.narrator;
-      $('#info-content').innerHTML = data.info;
-      $('#fun-fact').textContent = data.fun;
-
-      // Quiz
-      renderQuiz(sceneNumber);
-
-      // Animations
-      currentScene = sceneNumber;
-      switch(sceneNumber){
-        case 1: animateBinaryCode(); break;
-        case 2: animateWifi(); break;
-        case 3: animateFiber(); break;
-        case 4: animateEthernet(); break;
-        case 5: animateRecap(); break;
-      }
-    }
-
-    // =========================
     // Quiz
-    // =========================
-    function shuffle(arr){return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);}
+    const qs = [...document.querySelectorAll('.q')];
+    const checkBtn = document.getElementById('check');
+    const resetBtn = document.getElementById('reset');
+    const score = document.getElementById('score');
 
-    function renderQuiz(sceneNumber){
-      const q = sceneData[sceneNumber].quiz;
-      $('#quiz-question').textContent = q.question;
-      const grid = $('#quiz-options'); grid.innerHTML='';
-      $('#quiz-feedback').textContent='';
-
-      const options = shuffle(q.options.slice());
-      options.forEach((opt, idx)=>{
-        const b = document.createElement('div');
-        b.className = 'opt'; b.setAttribute('role','button'); b.setAttribute('tabindex','0');
-        b.textContent = opt.text; b.dataset.correct = String(!!opt.correct); b.dataset.explain = opt.explain || '';
-        b.addEventListener('click', ()=> handleAnswer(b, !!opt.correct, opt.explain||''));
-        b.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); b.click(); }});
-        grid.appendChild(b);
+    function correct(){
+      let ok=0;
+      qs.forEach((q)=>{
+        const corr = q.dataset.correct;
+        const chosen = q.querySelector('input[type=radio]:checked');
+        const fb = q.querySelector('.feedback');
+        if(!chosen){fb.innerHTML='<span class="badge err">À compléter</span>';return}
+        if(chosen.value===corr){ ok++; fb.innerHTML='<span class="badge ok">✅ Correct</span>'; }
+        else { fb.innerHTML='<span class="badge err">❌ Essaie encore</span>'; }
       });
+      if (score) score.textContent = `Score : ${ok} / ${qs.length}`;
     }
-
-    function disableOptions(){ $$('.opt').forEach(o=>o.setAttribute('aria-disabled','true')); }
-
-    function handleAnswer(el, isCorrect, explain){
-      if(el.getAttribute('aria-disabled')==='true') return;
-      disableOptions();
-      if(isCorrect){
-        el.classList.add('correct');
-        $('#quiz-feedback').innerHTML = `<i class="fas fa-check-circle"></i> Bravo ! ${explain}`;
-        score++; updateScore();
-      } else {
-        el.classList.add('incorrect');
-        $('#quiz-feedback').innerHTML = `<i class=\"fas fa-times-circle\"></i> Ce n’est pas ça… ${explain}`;
-        $$('.opt').forEach(o=>{ if(o!==el) o.removeAttribute('aria-disabled'); });
-      }
+    function reset(){
+      qs.forEach(q=>{
+        q.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+        const fb = q.querySelector('.feedback');
+        if (fb) fb.textContent='';
+      });
+      if (score) score.textContent='';
     }
-    
-    // =========================
-    // Animations (respectent pause & vitesse)
-    // =========================
-    function every(ms, fn){ const id = setInterval(()=>{ if(!paused) fn(); }, ms); activeIntervals.add(id); }
-    function later(ms, fn){ const id = setTimeout(()=>{ fn(); activeTimeouts.delete(id); }, ms); activeTimeouts.add(id); }
+    if (checkBtn) checkBtn.addEventListener('click',correct);
+    if (resetBtn) resetBtn.addEventListener('click',reset);
 
-    function animateBinaryCode(){
-      const container = $('#scene1');
-      const sp = speedMult();
-      for(let i=0;i<20;i++){
-        later(i * 200/sp, ()=>{
-          const bit = document.createElement('div');
-          bit.className='binary-code';
-          bit.textContent = Math.random()>0.5?'1':'0';
-          bit.style.left = (10+Math.random()*80)+'%';
-          bit.style.top  = (20+Math.random()*50)+'%';
-          bit.style.fontSize = (16+Math.random()*20)+'px';
-          container.appendChild(bit);
-          let pos = parseFloat(bit.style.top);
-          const id = setInterval(()=>{
-            if(paused) return;
-            pos += 1; bit.style.top = pos+'%';
-            if(pos>92){ clearInterval(id); activeIntervals.delete(id); bit.remove(); }
-          }, 100/sp); activeIntervals.add(id);
-        });
-      }
-    }
+    // ===== Animations pédagogiques (sans erreur de syntaxe) =====
 
-    function animateWifi(){
-      const router = $('#scene2 .router');
-      const laptop = $('#scene2 .laptop');
-      const phone  = $('#scene2 .smartphone');
-      const scene = $('#scene2');
-      const sp = speedMult();
-      const containerRect = $('#animation-container').getBoundingClientRect();
+    // Wi‑Fi : apparition de bits qui partent du centre vers les appareils
+    (function wifiAnim(){
+      const box = document.getElementById('wifiBox');
+      if(!box) return;
+      function spawnBit(){
+        const bit = document.createElement('div');
+        bit.className = 'bit';
+        bit.textContent = Math.random()>0.5 ? '1' : '0';
+        bit.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+        bit.style.left = '50%';
+        bit.style.bottom = '56px';
+        bit.style.transform = 'translate(-50%,0)';
+        box.appendChild(bit);
+        const targets = [box.querySelector('.laptop'), box.querySelector('.phone')].filter(Boolean);
+        if(!targets.length){ setTimeout(()=>bit.remove(), 1500); return; }
+        const dst = targets[Math.floor(Math.random()*targets.length)].getBoundingClientRect();
+        const rect = box.getBoundingClientRect();
+        const dx = (dst.left + dst.width/2) - (rect.left + rect.width/2);
+        const dy = (dst.top + dst.height/2) - (rect.top + rect.height/2) - 56;
+        const dur = 1400 + Math.random()*900;
+        const start = performance.now();
+        function step(t){
+          const p = Math.min(1,(t-start)/dur);
+          bit.style.opacity = p<.1? p*10 : (p>.9? (1-p)*10 : 1);
+          bit.style.transform = `translate(calc(-50% + ${dx*p}px), ${dy*p}px)`;
+          if(p<1) requestAnimationFrame(step); else bit.remove();
+        }
+        requestAnimationFrame(step);
+      }
+      for(let i=0;i<6;i++) setTimeout(spawnBit,i*250);
+      setInterval(spawnBit, 500);
+    })();
 
-      // Ondes concentriques
-      for(let i=0;i<10;i++){
-        later(i*500/sp, ()=>{
-          const r = router.getBoundingClientRect();
-          const cx = r.left - containerRect.left + r.width/2;
-          const cy = r.top  - containerRect.top  + r.height/2;
-          const wave = document.createElement('div'); wave.className='wave'; wave.style.left=cx+'px'; wave.style.top=cy+'px';
-          scene.appendChild(wave);
-          let size=0;
-          const id = setInterval(()=>{
-            if(paused) return;
-            size+=5; wave.style.width=size+'px'; wave.style.height=size+'px'; wave.style.opacity = 1-size/320;
-            if(size>320){ clearInterval(id); activeIntervals.delete(id); wave.remove(); }
-          }, 30/sp); activeIntervals.add(id);
-        });
+    // Binaire décoratif : pluie de 0/1 douce
+    (function binaryRain(){
+      const box = document.getElementById('binaryBox');
+      if(!box) return;
+      function drop(){
+        const b = document.createElement('div');
+        b.className = 'bit';
+        b.textContent = Math.random()>0.5?'1':'0';
+        b.style.left = (10+Math.random()*80) + '%';
+        b.style.top = '10%';
+        b.style.opacity = 0;
+        box.appendChild(b);
+        const dur = 2000 + Math.random()*1500;
+        const start = performance.now();
+        function step(t){
+          const p = Math.min(1,(t-start)/dur);
+          b.style.top = (10 + 70*p) + '%';
+          b.style.opacity = p<.2? p*5 : (p>.8? (1-p)*5 : 1);
+          if(p<1) requestAnimationFrame(step); else b.remove();
+        }
+        requestAnimationFrame(step);
       }
-      // Bits vers appareils
-      for(let i=0;i<12;i++){
-        later(i*300/sp, ()=>{
-          const r = router.getBoundingClientRect();
-          const startX = r.left - containerRect.left + r.width/2;
-          const startY = r.top  - containerRect.top  + r.height/2;
-          const target = Math.random()>0.5? laptop : phone;
-          const t = target.getBoundingClientRect();
-          const endX = t.left - containerRect.left + t.width/2;
-          const endY = t.top  - containerRect.top  + t.height/2;
-          const bit = document.createElement('div'); bit.className='binary-code'; bit.textContent=Math.random()>0.5?'1':'0';
-          bit.style.left=startX+'px'; bit.style.top=startY+'px'; scene.appendChild(bit);
-          let prog=0;
-          const id = setInterval(()=>{
-            if(paused) return;
-            prog+=0.02; bit.style.left = (startX+(endX-startX)*prog)+'px'; bit.style.top=(startY+(endY-startY)*prog)+'px';
-            if(prog>=1){ clearInterval(id); activeIntervals.delete(id); bit.remove(); }
-          }, 20/sp); activeIntervals.add(id);
-        });
-      }
-    }
+      for(let i=0;i<8;i++) setTimeout(drop,i*180);
+      setInterval(drop, 280);
+    })();
 
-    function animateFiber(){
-      const cable = $('#scene3 .fiber-cable');
-      const sp = speedMult();
-      for(let i=0;i<15;i++){
-        later(i*300/sp, ()=>{
-          const pulse = document.createElement('div'); pulse.className='light-pulse';
-          cable.appendChild(pulse);
-          let x=0; const id=setInterval(()=>{
-            if(paused) return; x+=5; pulse.style.left=x+'px';
-            if(x>cable.clientWidth){ clearInterval(id); activeIntervals.delete(id); pulse.remove(); }
-          }, 20/sp); activeIntervals.add(id);
-        });
-      }
-    }
-
-    function animateEthernet(){
-      const cable = $('#scene4 .ethernet-cable');
-      const sp = speedMult();
-      for(let i=0;i<15;i++){
-        later(i*300/sp, ()=>{
-          const pulse = document.createElement('div'); pulse.className='electric-pulse';
-          cable.appendChild(pulse);
-          let x=0; const id=setInterval(()=>{
-            if(paused) return; x+=5; pulse.style.left=x+'px';
-            if(x>cable.clientWidth){ clearInterval(id); activeIntervals.delete(id); pulse.remove(); }
-          }, 20/sp); activeIntervals.add(id);
-        });
-      }
-    }
-
-    function animateRecap(){
-      const scene = $('#scene5');
-      const sp = speedMult();
-      for(let i=0;i<15;i++){
-        later(i*300/sp, ()=>{
-          const bit = document.createElement('div'); bit.className='binary-code'; bit.textContent=Math.random()>0.5?'1':'0';
-          bit.style.left=(10+Math.random()*80)+'%'; bit.style.top=(40+Math.random()*40)+'%'; scene.appendChild(bit);
-          let dir = Math.random()>0.5?1:-1; let pos = parseFloat(bit.style.left);
-          const id=setInterval(()=>{
-            if(paused) return; pos+=dir; bit.style.left=pos+'%';
-            if(pos>92||pos<8){ clearInterval(id); activeIntervals.delete(id); bit.remove(); }
-          }, 100/sp); activeIntervals.add(id);
-        });
-      }
-    }
-    // =========================
-    // Init
-    // =========================
-    window.addEventListener('load', ()=>{
-      bindUI();
-      showScene(1);
-      restartLoop();
-    });
   </script>
 </body>
 </html>
